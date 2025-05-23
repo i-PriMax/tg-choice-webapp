@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Что выберешь?</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: #fff;
+    }
+    .half {
+      width: 100vw;
+      height: 50vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+      color: #fff;
+      cursor: pointer;
+      user-select: none;
+      transition: filter 0.2s;
+    }
+    .top {
+      background: #0066cc;
+    }
+    .bottom {
+      background: #dc143c;
+    }
+    .disabled {
+      pointer-events: none;
+      filter: grayscale(0.5) blur(1px);
+    }
+    .result-bar {
+      width: 80vw;
+      height: 40px;
+      margin: 30px auto;
+      background: #eee;
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      font-size: 1.2em;
+      color: #222;
+    }
+    .bar-blue {
+      background: #0066cc;
+      text-align: right;
+      padding-right: 10px;
+      transition: width 0.5s;
+    }
+    .bar-red {
+      background: #dc143c;
+      text-align: left;
+      padding-left: 10px;
+      transition: width 0.5s;
+    }
+  </style>
+</head>
+<body>
+  <div id="top" class="half top">Получить 1 миллион долларов</div>
+  <div id="bottom" class="half bottom">Научиться летать</div>
+  <div id="result" style="display:none;">
+    <div class="result-bar">
+      <div id="bar-blue" class="bar-blue"></div>
+      <div id="bar-red" class="bar-red"></div>
+    </div>
+    <div style="text-align:center;">
+      <span id="percent-blue"></span> выбрали верх<br>
+      <span id="percent-red"></span> выбрали низ
+    </div>
+  </div>
+  <script>
+    // Для примера — локальные счетчики (в реальном приложении — сервер)
+    let votes = { blue: 0, red: 0 };
+    let voted = false;
+
+    function showResult(userChoice) {
+      voted = true;
+      document.getElementById('top').classList.add('disabled');
+      document.getElementById('bottom').classList.add('disabled');
+      document.getElementById('result').style.display = 'block';
+
+      let total = votes.blue + votes.red;
+      let percentBlue = total ? Math.round(votes.blue / total * 100) : 0;
+      let percentRed = total ? Math.round(votes.red / total * 100) : 0;
+
+      document.getElementById('bar-blue').style.width = percentBlue + '%';
+      document.getElementById('bar-blue').textContent = percentBlue ? percentBlue + '%' : '';
+      document.getElementById('bar-red').style.width = percentRed + '%';
+      document.getElementById('bar-red').textContent = percentRed ? percentRed + '%' : '';
+
+      document.getElementById('percent-blue').textContent = percentBlue + '%';
+      document.getElementById('percent-red').textContent = percentRed + '%';
+
+      // Отправляем результат обратно в Telegram-бот (если открыто как WebApp)
+      if (window.Telegram && Telegram.WebApp) {
+        Telegram.WebApp.sendData(userChoice);
+        Telegram.WebApp.close();
+      }
+    }
+
+    document.getElementById('top').onclick = function() {
+      if (!voted) {
+        votes.blue++;
+        showResult('blue');
+      }
+    };
+    document.getElementById('bottom').onclick = function() {
+      if (!voted) {
+        votes.red++;
+        showResult('red');
+      }
+    };
+  </script>
+</body>
+</html>
